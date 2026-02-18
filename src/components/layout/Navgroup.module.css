@@ -1,0 +1,17 @@
+.group {
+    margin-bottom: 16px;
+}
+
+.group:last-child {
+    margin-bottom: 0;
+}
+
+.label {
+    font-size: 9.5px;
+    font-family: var(--font-mono);
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0 10px;
+    margin-bottom: 5px;
+}

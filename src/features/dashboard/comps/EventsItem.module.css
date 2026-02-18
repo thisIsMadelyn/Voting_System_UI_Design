@@ -1,0 +1,97 @@
+.item {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 14px 22px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.item:hover {
+    background: rgba(74,124,89,0.04);
+}
+
+.item:last-child {
+    border-bottom: none;
+}
+
+.dateBlock {
+    width: 44px;
+    flex-shrink: 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    text-align: center;
+    padding: 7px 4px;
+}
+
+.month {
+    font-size: 9px;
+    font-family: var(--font-mono);
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.day {
+    font-family: var(--font-serif);
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--text);
+}
+
+.body {
+    flex: 1;
+}
+
+.title {
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 5px;
+    color: var(--text);
+}
+
+.meta {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.metaItem {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--muted2);
+}
+
+.tag {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    padding: 2px 8px;
+    border-radius: 10px;
+    flex-shrink: 0;
+    align-self: center;
+}
+
+.tagCouncil {
+    background: rgba(74,124,89,0.16);
+    color: var(--green3);
+}
+
+.tagUrgent {
+    background: rgba(192,84,74,0.14);
+    color: #E08A82;
+}
+
+.tagSocial {
+    background: rgba(74,127,165,0.16);
+    color: #7EC8E3;
+}
+
+.tagGeneral {
+    background: rgba(201,153,58,0.14);
+    color: var(--gold2);
+}

@@ -1,0 +1,88 @@
+.widget {
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 22px;
+    min-width: 200px;
+}
+
+.location {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    color: var(--muted);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.icon {
+    font-size: 34px;
+    line-height: 1;
+}
+
+.temp {
+    font-family: var(--font-serif);
+    font-size: 38px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--text);
+}
+
+.unit {
+    font-size: 16px;
+    color: var(--muted2);
+    font-family: var(--font-sans);
+    vertical-align: super;
+}
+
+.condition {
+    font-size: 12px;
+    color: var(--muted2);
+    margin-bottom: 14px;
+}
+
+.forecast {
+    display: flex;
+    gap: 6px;
+}
+
+.day {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 4px;
+}
+
+.dayName {
+    font-size: 9px;
+    font-family: var(--font-mono);
+    color: var(--muted);
+    text-transform: uppercase;
+}
+
+.dayTemp {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+}
+
+.dayRain {
+    font-size: 9px;
+    color: #7EC8E3;
+    font-family: var(--font-mono);
+}
