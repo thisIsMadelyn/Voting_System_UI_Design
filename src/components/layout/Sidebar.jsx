@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { ROUTES } from "../../router/Routes";
 import styles from './Sidebar.module.css'
 import Sidebarlogo from './Sidebarlogo'
 import Navgroup from './Navgroup'
 import SideBarUser from './SideBarUser'
+import { useNavigate, useLocation } from 'react-router-dom'
+
 
 const NAV = [
     {
@@ -14,7 +16,7 @@ const NAV = [
         ]
     },
     {
-        group: 'Council',
+        group: 'Details',
         items: [
             { id: 'members', label: 'Members', icon: 'users' },
             { id: 'announcements', label: 'Announcements', icon: 'message' },
@@ -29,8 +31,23 @@ const NAV = [
     },
 ]
 
+const NAV_ROUTE_MAP = {
+    dashboard: ROUTES.DASHBOARD,
+    events: ROUTES.EVENTS,
+    polls: ROUTES.POLLS,
+    members: ROUTES.MEMBERS,
+    announcements: ROUTES.ANNOUNCEMENTS,
+    reports: ROUTES.REPORTS,
+    settings: ROUTES.SETTINGS,
+}
+
 export default function Sidebar() {
-    const [active, setActive] = useState('dashboard')
+    const navigate = useNavigate()
+    const location = useLocation()
+
+    const active = Object.entries(NAV_ROUTE_MAP).find(
+        ([, route]) => location.pathname === route
+    )?.[0] ?? 'dashboard'
 
     return (
         <aside className={styles.sidebar}>
@@ -38,7 +55,7 @@ export default function Sidebar() {
             <Sidebarlogo />
             <nav className={styles.nav}>
                 {NAV.map(group => (
-                    <Navgroup key={group.group} group={group} active={active} onSelect={setActive} />
+                    <Navgroup key={group.group} group={group} active={active} onSelect={(id) => navigate(NAV_ROUTE_MAP[id])} />
                 ))}
             </nav>
             <SideBarUser />

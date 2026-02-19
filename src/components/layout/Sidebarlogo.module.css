@@ -33,3 +33,18 @@
     letter-spacing: 0.05em;
     margin-top: 2px;
 }
+
+.crest {
+    width: 70px;  /* Match your existing design size */
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden; /* Ensures the photo doesn't bleed out */
+}
+
+.logoImage {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Keeps the aspect ratio of the photo perfect */
+}

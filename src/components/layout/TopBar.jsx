@@ -9,7 +9,7 @@ export default function Topbar({ section = 'Dashboard', role = 'captain' }) {
     return (
         <header className={styles.topbar}>
             <div className={styles.left}>
-                <Breadcrumb items={['Student Council', section]} />
+                <Breadcrumb items={['EESTEC', section]} />
                 <RoleTag role={role} />
             </div>
             <SearchBar placeholder="Search members, events…" />

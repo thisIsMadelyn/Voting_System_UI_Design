@@ -1,28 +1,34 @@
 import styles from './WeatherWigdet.module.css'
+import Icon from "../../../components/ui/Icon.jsx";
+
+// Helper function to map WMO codes to UI data
+const getWeatherDetails = (code) => {
+    if (code === 0) return { label: 'Clear Sky', icon: 'sun' };
+    if (code > 0 && code <= 3) return { label: 'Cloudy', icon: 'cloud' };
+    if (code >= 45 && code <= 48) return { label: 'Foggy', icon: 'cloud-drizzle' };
+    if (code >= 51 && code <= 67) return { label: 'Rain', icon: 'cloud-rain' };
+    if (code >= 71 && code <= 77) return { label: 'Snow', icon: 'cloud-snow' };
+    if (code >= 95) return { label: 'Thunderstorm', icon: 'cloud-lightning' };
+    return { label: 'Unknown', icon: 'help-circle' };
+};
 
 export default function WeatherWidget({ data }) {
+    // If data is missing for any reason, don't crash the page
+    if (!data) return null;
+
+    const { temperature, weathercode } = data;
+    const details = getWeatherDetails(weathercode);
+
     return (
         <div className={styles.widget}>
-            <p className={styles.location}>📍 {data.location}</p>
-            <div className={styles.main}>
-                <span className={styles.icon}>{data.icon}</span>
-                <div>
-          <span className={styles.temp}>
-            {data.temp}
-              <sup className={styles.unit}>°{data.unit}</sup>
-          </span>
-                </div>
+            <div className={styles.iconWrapper}>
+                <Icon name={details.icon} size={24} />
             </div>
-            <p className={styles.condition}>{data.condition}</p>
-            <div className={styles.forecast}>
-                {data.forecast.map(f => (
-                    <div key={f.day} className={styles.day}>
-                        <span className={styles.dayName}>{f.day}</span>
-                        <span className={styles.dayTemp}>{f.high}°</span>
-                        <span className={styles.dayRain}>{f.icon} {f.rainChance}%</span>
-                    </div>
-                ))}
+            <div className={styles.info}>
+                <p className={styles.temp}>{Math.round(temperature)}°C</p>
+                <p className={styles.condition}>{details.label}</p>
+                <p className={styles.location}>Thessaloniki</p>
             </div>
         </div>
-    )
+    );
 }
