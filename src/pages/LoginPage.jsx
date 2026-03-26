@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import useAuthStore from '../services/authStore'
 import styles from './LoginPage.module.css'
+import eesteclogo from '../assets/eestec.logo.png'
 
 export default function LoginPage() {
     const navigate = useNavigate()
@@ -36,13 +37,9 @@ export default function LoginPage() {
             <div className={styles.card}>
                 <div className={styles.header}>
                     <div className={styles.logo}>
-                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#6BAE78" strokeWidth="1.8">
-                            <path d="M12 2L3 7l9 5 9-5-9-5z"/>
-                            <path d="M3 12l9 5 9-5"/>
-                            <path d="M3 17l9 5 9-5"/>
-                        </svg>
+                        <img />
                     </div>
-                    <h1 className={styles.title}>Student Council</h1>
+                    <h1 className={styles.title}>EESTEC</h1>
                     <p className={styles.subtitle}>Sign in to your account</p>
                 </div>
 

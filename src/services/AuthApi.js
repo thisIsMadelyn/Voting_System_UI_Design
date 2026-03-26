@@ -10,11 +10,10 @@ export const authApi = {
     // Login
     login: async (credentials) => {
         const response = await client.post('/auth/login', credentials)
-        const { token, username, role, userId, expiresIn } = response.data
+        const { token, username, role, userId, loginProperty } = response.data
 
-        // Store token and user info
         localStorage.setItem('token', token)
-        localStorage.setItem('user', JSON.stringify({ username, role, userId }))
+        localStorage.setItem('user', JSON.stringify({ username, role, userId, loginProperty }))
 
         return response.data
     },

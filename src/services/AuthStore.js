@@ -12,7 +12,7 @@ const useAuthStore = create((set) => ({
         try {
             const data = await authApi.login(credentials)
             set({
-                user: { username: data.username, role: data.role, userId: data.userId },
+                user: { username: data.username, role: data.role, userId: data.userId, loginProperty: data.loginProperty },
                 isAuthenticated: true,
                 isLoading: false
             })
@@ -25,7 +25,6 @@ const useAuthStore = create((set) => ({
             throw error
         }
     },
-
     logout: () => {
         authApi.logout()
         set({ user: null, isAuthenticated: false })
