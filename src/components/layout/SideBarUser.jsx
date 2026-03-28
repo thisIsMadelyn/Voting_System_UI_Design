@@ -1,6 +1,6 @@
 import Icon from '../ui/Icon'
 import useAuthStore from '../../services/AuthStore'
-import { useCurrentUserProfile } from '../../services/useUsers'
+import { useCurrentUserProfile } from '../../hooks/useUsers'
 import styles from './SidebarUser.module.css'
 
 export default function SidebarUser() {

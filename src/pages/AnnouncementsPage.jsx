@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useAnnouncements, useCreateAnnouncement } from '../services/useAnnouncements'
+import { useAnnouncements, useCreateAnnouncement } from '../hooks/useAnnouncements'
 import styles from './AnnouncementsPage.module.css'
 import { useDismissed } from "../hooks/useDismissed.js";
 

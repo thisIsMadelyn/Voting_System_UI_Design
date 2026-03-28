@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useMemberships, useCommittees } from '../services/useMembers'
+import { useMemberships, useCommittees } from '../hooks/useMembers'
 import styles from './membersPage.module.css'
 
 export default function MembersPage() {

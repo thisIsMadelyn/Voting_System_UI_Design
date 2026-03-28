@@ -13,6 +13,7 @@ import MembersPage from "../pages/MembersPage.jsx";
 import { Navigate } from "react-router-dom";
 import useAuthStore from "../services/AuthStore.js";
 import ReportsPage from "../pages/ReportsPage.jsx";
+import AttendancePage from "../pages/AttendancePage.jsx";
 
 // Placeholder για pages που δεν έχουν φτιαχτεί ακόμα
 const Soon = ({ name }) => (
@@ -48,6 +49,7 @@ export default function AppRouter() {
                                     <Route path={ROUTES.ANNOUNCEMENTS} element={<AnnouncementsPage />} />
                                     <Route path={ROUTES.REPORTS} element={<ReportsPage />} />
                                     <Route path={ROUTES.SETTINGS} element={<Soon name="Settings" />} />
+                                    <Route path={ROUTES.ATTENDANCE} element={<AttendancePage />} />
                                 </Routes>
                             </MainPanel>
                         </Layout>

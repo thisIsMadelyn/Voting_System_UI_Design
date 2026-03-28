@@ -6,8 +6,8 @@ import EventsCard from '../features/dashboard/comps/EventsCard'
 import AttendanceCard from '../features/dashboard/comps/AttendanceCard'
 import NoticeBoardCard from '../features/dashboard/comps/NoticeBoardCard'
 
-import CheckAttendanceCard from '../pages/CheckAttendanceCard'
-import { authApi } from '../services/AuthApi.js'
+// import CheckAttendanceCard from '../features/dashboard/comps/CheckAttendanceCard.jsx'
+// import { authApi } from '../services/AuthApi.js'
 
 import {
     mockUser,
@@ -21,8 +21,7 @@ import {
 
 const TODAY = 'Tuesday, February 17 · 2026'
 
-const currentUser = authApi.getCurrentUser()
-const isModerator = ['MODERATOR', 'ADMIN'].includes(currentUser?.role)
+// const currentUser = authApi.getCurrentUser()
 
 export default function DashboardPage() {
     return (
@@ -40,7 +39,7 @@ export default function DashboardPage() {
                 <NoticeBoardCard notices={mockNotices} />
             </div>
 
-            {isModerator && <CheckAttendanceCard />}
+            {/*{isModerator && <CheckAttendanceCard />}*/}
         </main>
     )
 }

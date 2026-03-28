@@ -29,6 +29,13 @@ const NAV = [
             { id: 'settings', label: 'Settings', icon: 'settings' },
         ]
     },
+    {
+        group: 'Admin',
+        items: [
+            { id: 'attendance', label: 'Attendance', icon: 'clipboard' },
+            { id: 'settings', label: 'Settings', icon: 'settings' },
+        ]
+    }
 ]
 
 const NAV_ROUTE_MAP = {
@@ -38,6 +45,7 @@ const NAV_ROUTE_MAP = {
     members: ROUTES.MEMBERS,
     announcements: ROUTES.ANNOUNCEMENTS,
     reports: ROUTES.REPORTS,
+    attendance: ROUTES.ATTENDANCE,
     settings: ROUTES.SETTINGS,
 }
 

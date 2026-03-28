@@ -1,4 +1,3 @@
-// src/services/UsersApi.js
 import client from './axiosClient'
 
 // Export 1

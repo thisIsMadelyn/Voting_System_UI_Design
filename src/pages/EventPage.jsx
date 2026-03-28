@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useEvent, useCreateEvent } from '../services/useEvents.js'
+import { useEvent, useCreateEvent } from '../hooks/useEvents.js'
 import { useDismissed } from '../hooks/useDismissed.js'
 import styles from './EventPage.module.css'
 

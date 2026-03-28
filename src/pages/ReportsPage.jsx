@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { useInbox, useSent, useCreateReport } from '../services/useReports'
+import { useInbox, useSent, useCreateReport } from '../hooks/useReports'
 import { useDismissed } from '../hooks/useDismissed'
 import useAuthStore from '../services/AuthStore'
-import styles from './ReportPages.module.css'
+import styles from './ReportsPages.module.css'
 
 export default function ReportsPage() {
     const { user } = useAuthStore()

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useCreatePoll } from '../../../services/usePolls'
+import { useCreatePoll } from '../../../hooks/usePolls'
 import styles from './PollCreationCard.module.css'
 
 const MAJORITY_TYPES = ['ABSOLUTE', 'TWO_THIRDS', 'RELATIVE']

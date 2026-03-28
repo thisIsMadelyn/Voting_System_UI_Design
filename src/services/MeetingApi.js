@@ -1,8 +1,11 @@
-import client from './axiosClient'
+import client from './AxiosClient'
 
-export const meetingApi = {
-    getActive: async () => {
-        const response = await client.get('/meetings/active')
-        return response.data
-    },
+export const getActive = async () => {
+    const response = await client.get('/general_meetings/active')
+    return response.data
+}
+
+export const getAll = async () => {
+    const response = await client.get('/general_meetings')
+    return response.data
 }
