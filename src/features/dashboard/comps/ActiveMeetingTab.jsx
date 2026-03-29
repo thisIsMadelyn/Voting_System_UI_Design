@@ -24,8 +24,8 @@ export default function ActiveMeetingTab() {
 
             const summary = await getSummary(activeMeeting.id)
             setAttended(summary.map(a => ({
-                userId: a.userId,
-                checkedOut: !!a.checkOutTime,
+                userId: a.user.id,
+                checkedOut: !!a.check_out_time,
             })))
             setUsers(allUsers)
         } catch (err) {
@@ -50,17 +50,34 @@ export default function ActiveMeetingTab() {
         return 'in'
     }
 
+
     const handleCheckIn = async (userId) => {
         setActionLoading(userId + '_in')
         try {
             await checkIn({ meetingId: meeting.id, userId })
             await fetchData()
         } catch (err) {
-            console.error('Check-in failed', err)
+            if (err?.response?.status === 409) {
+                alert('User is already checked in.')
+            } else {
+                console.error('Check-in failed', err)
+            }
         } finally {
             setActionLoading(null)
         }
     }
+
+    // const handleCheckIn = async (userId) => {
+    //     setActionLoading(userId + '_in')
+    //     try {
+    //         await checkIn({ meetingId: meeting.id, userId })
+    //         await fetchData()
+    //     } catch (err) {
+    //         console.error('Check-in failed', err)
+    //     } finally {
+    //         setActionLoading(null)
+    //     }
+    // }
 
     const handleCheckOut = async (userId) => {
         setActionLoading(userId + '_out')
