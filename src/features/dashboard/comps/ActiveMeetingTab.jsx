@@ -1,17 +1,17 @@
 import { useEffect, useState } from 'react'
-// import { getActive } from '../../../services/MeetingApi'
 import { getActive } from '../../../services/MeetingApi'
-import { checkIn, checkOut, getSummary } from '../../../services/AttendanceApi'
 import { getAll } from '../../../services/UsersApi'
+import { getRound, createRound, deleteRound } from '../../../services/AttendanceApi'
+import AttendanceRoundCard from './AttendanceRoundCard'
 import styles from './ActiveMeetingTab.module.css'
 
 export default function ActiveMeetingTab() {
     const [meeting, setMeeting] = useState(null)
     const [users, setUsers] = useState([])
-    const [attended, setAttended] = useState([])
+    const [rounds, setRounds] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
-    const [actionLoading, setActionLoading] = useState(null)
+    const [creating, setCreating] = useState(false)
 
     const fetchData = async () => {
         try {
@@ -21,12 +21,8 @@ export default function ActiveMeetingTab() {
                 getAll(),
             ])
             setMeeting(activeMeeting)
-
-            const summary = await getSummary(activeMeeting.id)
-            setAttended(summary.map(a => ({
-                userId: a.user.id,
-                checkedOut: !!a.check_out_time,
-            })))
+            const allRounds = await getRound(activeMeeting.id)
+            setRounds(allRounds)
             setUsers(allUsers)
         } catch (err) {
             if (err?.response?.status === 404) {
@@ -43,51 +39,25 @@ export default function ActiveMeetingTab() {
         fetchData()
     }, [])
 
-    const getStatus = (userId) => {
-        const record = attended.find(a => a.userId === userId)
-        if (!record) return 'absent'
-        if (record.checkedOut) return 'out'
-        return 'in'
-    }
-
-
-    const handleCheckIn = async (userId) => {
-        setActionLoading(userId + '_in')
+    const handleCreateRound = async () => {
+        if (!meeting) return
+        setCreating(true)
         try {
-            await checkIn({ meetingId: meeting.id, userId })
-            await fetchData()
+            const newRound = await createRound(meeting.id)
+            setRounds(prev => [...prev, newRound])
         } catch (err) {
-            if (err?.response?.status === 409) {
-                alert('User is already checked in.')
-            } else {
-                console.error('Check-in failed', err)
-            }
+            console.error('Failed to create round', err)
         } finally {
-            setActionLoading(null)
+            setCreating(false)
         }
     }
 
-    // const handleCheckIn = async (userId) => {
-    //     setActionLoading(userId + '_in')
-    //     try {
-    //         await checkIn({ meetingId: meeting.id, userId })
-    //         await fetchData()
-    //     } catch (err) {
-    //         console.error('Check-in failed', err)
-    //     } finally {
-    //         setActionLoading(null)
-    //     }
-    // }
-
-    const handleCheckOut = async (userId) => {
-        setActionLoading(userId + '_out')
+    const handleDeleteRound = async (roundId) => {
         try {
-            await checkOut({ meetingId: meeting.id, userId })
-            await fetchData()
+            await deleteRound(roundId)
+            setRounds(prev => prev.filter(r => r.id !== roundId))
         } catch (err) {
-            console.error('Check-out failed', err)
-        } finally {
-            setActionLoading(null)
+            console.error('Failed to delete round', err)
         }
     }
 
@@ -100,70 +70,47 @@ export default function ActiveMeetingTab() {
         </div>
     )
 
-    const checkedInCount = attended.filter(a => !a.checkedOut).length
-
     return (
         <div className={styles.wrapper}>
             <div className={styles.meetingCard}>
                 <div className={styles.meetingInfo}>
                     <span className={styles.meetingLabel}>Active Meeting</span>
-                    <span className={styles.meetingTitle}>{meeting.title ?? `Meeting #${meeting.id}`}</span>
+                    <span className={styles.meetingTitle}>
+                        {meeting.title ?? `Meeting #${meeting.id}`}
+                    </span>
                 </div>
                 <div className={styles.meetingMeta}>
-                    <span className={styles.badge}>{checkedInCount} / {users.length} checked in</span>
+                    <span className={styles.roundCount}>
+                        {rounds.length} round{rounds.length !== 1 ? 's' : ''}
+                    </span>
+                    <button
+                        className={styles.btnAdd}
+                        onClick={handleCreateRound}
+                        disabled={creating}
+                        title="Add new round"
+                    >
+                        {creating ? '...' : '＋ New Round'}
+                    </button>
                 </div>
             </div>
 
-            <div className={styles.tableWrapper}>
-                <table className={styles.table}>
-                    <thead>
-                    <tr>
-                        <th>Member</th>
-                        <th>Role</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {users.map(user => {
-                        const status = getStatus(user.id)
-                        return (
-                            <tr key={user.id}>
-                                <td className={styles.nameCell}>
-                                    <span className={styles.name}>{user.fullName ?? user.username}</span>
-                                    <span className={styles.username}>@{user.username}</span>
-                                </td>
-                                <td>
-                                        <span className={styles[`role_${String(user.role ?? '').toLowerCase()}`] ?? styles.roleDefault}>
-                                            {user.role}
-                                        </span>
-                                </td>
-                                <td>
-                                        <span className={`${styles.status} ${styles[`status_${status}`]}`}>
-                                            {status === 'in' ? 'Checked In' : status === 'out' ? 'Checked Out' : 'Absent'}
-                                        </span>
-                                </td>
-                                <td className={styles.actions}>
-                                    <button
-                                        className={styles.btnIn}
-                                        disabled={status === 'in' || status === 'out' || actionLoading !== null}
-                                        onClick={() => handleCheckIn(user.id)}
-                                    >
-                                        {actionLoading === user.id + '_in' ? '...' : 'Check In'}
-                                    </button>
-                                    <button
-                                        className={styles.btnOut}
-                                        disabled={status !== 'in' || actionLoading !== null}
-                                        onClick={() => handleCheckOut(user.id)}
-                                    >
-                                        {actionLoading === user.id + '_out' ? '...' : 'Check Out'}
-                                    </button>
-                                </td>
-                            </tr>
-                        )
-                    })}
-                    </tbody>
-                </table>
+            {rounds.length === 0 && (
+                <div className={styles.emptyRounds}>
+                    <p>No rounds yet. Click <strong>＋ New Round</strong> to start.</p>
+                </div>
+            )}
+
+            <div className={styles.rounds}>
+                {[...rounds].reverse().map((round, index) => (
+                    <AttendanceRoundCard
+                        key={round.id}
+                        round={round}
+                        users={users}
+                        meetingId={meeting.id}
+                        defaultExpanded={index === 0}
+                        onDelete={() => handleDeleteRound(round.id)}
+                    />
+                ))}
             </div>
         </div>
     )
