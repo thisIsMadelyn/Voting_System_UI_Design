@@ -1,0 +1,23 @@
+.topbar {
+    height: var(--topbar-h);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 28px;
+    gap: 14px;
+    background: var(--surface);
+    flex-shrink: 0;
+    font-size: 30px;
+}
+
+.left {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.actions {
+    display: flex;
+    gap: 8px;
+}

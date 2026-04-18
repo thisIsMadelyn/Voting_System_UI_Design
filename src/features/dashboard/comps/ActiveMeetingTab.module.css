@@ -1,0 +1,105 @@
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.state {
+    color: var(--muted2);
+    font-size: var(--font-sm);
+}
+
+.stateError {
+    color: var(--red);
+    font-size: var(--font-sm);
+}
+
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-10);
+    color: var(--muted2);
+    font-size: var(--font-sm);
+}
+
+.emptyIcon {
+    font-size: 2rem;
+}
+
+.meetingCard {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+}
+
+.meetingInfo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.meetingLabel {
+    font-size: var(--font-xs);
+    color: var(--muted2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.meetingTitle {
+    font-size: var(--font-md);
+    font-weight: 600;
+    color: var(--text);
+}
+
+.meetingMeta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.roundCount {
+    font-size: var(--font-xs);
+    color: var(--muted2);
+}
+
+.btnAdd {
+    padding: var(--space-2) var(--space-4);
+    background: color-mix(in srgb, var(--accent) 15%, transparent);
+    color: var(--accent);
+    border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+
+.btnAdd:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.btnAdd:hover:not(:disabled) {
+    opacity: 0.85;
+}
+
+.emptyRounds {
+    padding: var(--space-6);
+    text-align: center;
+    color: var(--muted2);
+    font-size: var(--font-sm);
+    border: 1px dashed var(--border2);
+    border-radius: var(--radius-md);
+}
+
+.rounds {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}

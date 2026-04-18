@@ -1,0 +1,128 @@
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.state {
+    color: var(--muted2);
+    font-size: var(--font-sm);
+    padding: var(--space-2) 0;
+}
+
+.stateError {
+    color: var(--red);
+    font-size: var(--font-sm);
+}
+
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-10);
+    color: var(--muted2);
+    font-size: var(--font-sm);
+}
+
+.emptyIcon {
+    font-size: 2rem;
+}
+
+/* Accordion card */
+.card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.cardHeader {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4);
+    background: var(--surface);
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s;
+}
+
+.cardHeader:hover {
+    background: color-mix(in srgb, var(--surface) 80%, var(--border));
+}
+
+.cardInfo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.cardTitle {
+    font-size: var(--font-sm);
+    font-weight: 600;
+    color: var(--text);
+}
+
+.cardDate {
+    font-size: var(--font-xs);
+    color: var(--muted2);
+}
+
+.cardRight {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.cardCount {
+    font-size: var(--font-xs);
+    color: var(--muted2);
+}
+
+.chevron {
+    font-size: var(--font-xs);
+    color: var(--muted2);
+}
+
+/* Expanded body */
+.cardBody {
+    padding: var(--space-4);
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+}
+
+/* Inner table */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-sm);
+}
+
+.table th {
+    text-align: left;
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--font-xs);
+    font-weight: 500;
+    color: var(--muted2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border);
+}
+
+.table td {
+    padding: var(--space-2) var(--space-3);
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.mono {
+    font-family: var(--font-mono);
+    font-size: var(--font-xs);
+    color: var(--muted2);
+}

@@ -1,0 +1,25 @@
+.sidebar {
+    width: var(--sidebar-w);
+    min-width: var(--sidebar-w);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.glow {
+    position: absolute;
+    bottom: -60px;
+    right: -60px;
+    width: 220px;
+    height: 220px;
+    background: radial-gradient(circle, rgba(74,124,89,0.15) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.nav {
+    padding: 18px 12px;
+    flex: 1;
+}

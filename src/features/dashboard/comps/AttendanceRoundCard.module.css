@@ -1,0 +1,181 @@
+.card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.header {
+    display: flex;
+    align-items: center;
+    background: var(--surface);
+}
+
+.headerToggle {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s;
+}
+
+.headerToggle:hover {
+    background: color-mix(in srgb, var(--surface) 60%, var(--border));
+}
+
+.roundLabel {
+    font-size: var(--font-sm);
+    font-weight: 600;
+    color: var(--text);
+}
+
+.roundMeta {
+    font-size: var(--font-xs);
+    color: var(--muted2);
+    margin-left: auto;
+}
+
+.chevron {
+    font-size: var(--font-xs);
+    color: var(--muted2);
+}
+
+.btnDelete {
+    padding: var(--space-2) var(--space-3);
+    margin-right: var(--space-2);
+    background: color-mix(in srgb, var(--red) 12%, transparent);
+    color: var(--red);
+    border: 1px solid color-mix(in srgb, var(--red) 25%, transparent);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-xs);
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+
+.btnDelete:hover {
+    opacity: 0.75;
+}
+
+.body {
+    padding: var(--space-4);
+    background: var(--bg);
+}
+
+.state {
+    color: var(--muted2);
+    font-size: var(--font-sm);
+}
+
+/* Table */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-sm);
+}
+
+.table th {
+    text-align: left;
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--font-xs);
+    font-weight: 500;
+    color: var(--muted2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border);
+}
+
+.table td {
+    padding: var(--space-3) var(--space-3);
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+}
+
+.table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.rowAbsent {
+    opacity: 0.5;
+}
+
+/* Name cell — div inside td, not td itself */
+.nameCell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.name {
+    font-weight: 500;
+    color: var(--text);
+}
+
+.username {
+    font-size: var(--font-xs);
+    color: var(--muted2);
+    font-family: var(--font-mono);
+}
+
+/* Status badges */
+.status {
+    display: inline-block;
+    padding: 2px var(--space-2);
+    border-radius: 999px;
+    font-size: var(--font-xs);
+    font-weight: 500;
+}
+
+.status_in {
+    background: color-mix(in srgb, var(--green2) 15%, transparent);
+    color: var(--green2);
+}
+
+.status_out {
+    background: color-mix(in srgb, var(--muted2) 15%, transparent);
+    color: var(--muted2);
+}
+
+.status_absent {
+    background: color-mix(in srgb, var(--red) 12%, transparent);
+    color: var(--red);
+}
+
+/* Action buttons */
+.actions {
+    display: flex;
+    gap: var(--space-2);
+}
+
+.btnIn,
+.btnOut {
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-xs);
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: opacity 0.15s;
+}
+
+.btnIn {
+    background: color-mix(in srgb, var(--green2) 15%, transparent);
+    color: var(--green2);
+    border-color: color-mix(in srgb, var(--green2) 30%, transparent);
+}
+
+.btnOut {
+    background: color-mix(in srgb, var(--red) 12%, transparent);
+    color: var(--red);
+    border-color: color-mix(in srgb, var(--red) 25%, transparent);
+}
+
+.btnIn:disabled,
+.btnOut:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
