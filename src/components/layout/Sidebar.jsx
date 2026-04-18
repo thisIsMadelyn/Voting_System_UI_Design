@@ -26,13 +26,7 @@ const NAV = [
     {
         group: 'Admin',
         items: [
-            { id: 'settings', label: 'Settings', icon: 'settings' },
-        ]
-    },
-    {
-        group: 'Admin',
-        items: [
-            { id: 'attendance', label: 'Attendance', icon: 'clipboard' },
+            { id: 'attendance', label: 'Attendance', icon: 'user-check' },
             { id: 'settings', label: 'Settings', icon: 'settings' },
         ]
     }

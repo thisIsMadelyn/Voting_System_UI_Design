@@ -1,13 +1,23 @@
 import { useState } from 'react'
-import { useEvent, useCreateEvent } from '../hooks/useEvents.js'
-import { useDismissed } from '../hooks/useDismissed.js'
+import { useEvents, useCreateEvent } from '../hooks/useEvents'
 import styles from './EventPage.module.css'
 
-export default function EventsPage() {
-    const [eventId] = useState(1)
-    const { data: event, isLoading, isError } = useEvent(eventId)
-    const { mutate: create, isPending, isError: createError, error } = useCreateEvent()
-    const { dismiss, isVisible } = useDismissed()
+const EVENT_TYPES = [
+    'ADVANCED_SKILLS_WORKSHOP',
+    'CONGRESS',
+    'EXCHANGE',
+    'HOBOM',
+    'IMW',
+    'LRM',
+    'OPERATIONAL',
+    'SUBOM',
+    'WIBOM',
+    'WORKSHOP',
+]
+
+export default function EventsPage({ currentUserId }) {
+    const { data: events = [], isLoading, isError } = useEvents()
+    const { mutate: createEvent, isPending, isError: createError, error } = useCreateEvent()
 
     const [showForm, setShowForm] = useState(false)
     const [form, setForm] = useState({
@@ -15,32 +25,64 @@ export default function EventsPage() {
         description: '',
         startTime: '',
         endTime: '',
-        location: '',
+        hostingLC: '',
+        type: '',
     })
 
-    const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
+    const handleChange = (e) => {
+        const { name, value } = e.target
+        setForm(prev => ({ ...prev, [name]: value }))
+    }
 
     const handleSubmit = (e) => {
         e.preventDefault()
-        create(form, {
+
+        // Validate times
+        if (new Date(form.startTime) >= new Date(form.endTime)) {
+            alert('End time must be after start time')
+            return
+        }
+
+        // Prepare payload with current user as createdBy
+        const payload = {
+            title: form.title,
+            description: form.description,
+            startTime: form.startTime,
+            endTime: form.endTime,
+            hostingLC: form.hostingLC,
+            type: form.type,
+            createdBy: currentUserId, // Set from logged-in user
+        }
+
+        createEvent(payload, {
             onSuccess: () => {
-                setForm({ title: '', description: '', startTime: '', endTime: '', location: '' })
+                setForm({
+                    title: '',
+                    description: '',
+                    startTime: '',
+                    endTime: '',
+                    hostingLC: '',
+                    type: '',
+                })
                 setShowForm(false)
-            }
+            },
         })
     }
 
-    if (isLoading) return <div className={styles.state}>Loading event...</div>
-    if (isError) return <div className={styles.state}>Failed to load event.</div>
+    if (isLoading) return <div className={styles.state}>Loading events...</div>
+    if (isError) return <div className={styles.state}>Failed to load events.</div>
 
     return (
         <main className={styles.page}>
             <div className={styles.header}>
                 <div>
                     <h1 className={styles.title}>Events</h1>
-                    <p className={styles.subtitle}>Upcoming & recent activity</p>
+                    <p className={styles.subtitle}>Manage upcoming & recent activity</p>
                 </div>
-                <button className={styles.createBtn} onClick={() => setShowForm(v => !v)}>
+                <button
+                    className={styles.createBtn}
+                    onClick={() => setShowForm(v => !v)}
+                >
                     {showForm ? 'Cancel' : '+ Create Event'}
                 </button>
             </div>
@@ -48,33 +90,22 @@ export default function EventsPage() {
             {showForm && (
                 <div className={styles.formCard}>
                     <form onSubmit={handleSubmit} className={styles.form}>
-                        <div className={styles.row}>
-                            <div className={styles.field}>
-                                <label className={styles.label}>Title</label>
-                                <input
-                                    className={styles.input}
-                                    name="title"
-                                    placeholder="Event title"
-                                    value={form.title}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
-                            <div className={styles.field}>
-                                <label className={styles.label}>Location</label>
-                                <input
-                                    className={styles.input}
-                                    name="location"
-                                    placeholder="e.g. Thessaloniki"
-                                    value={form.location}
-                                    onChange={handleChange}
-                                    required
-                                />
-                            </div>
+                        {/* Title */}
+                        <div className={styles.field}>
+                            <label className={styles.label}>Title *</label>
+                            <input
+                                className={styles.input}
+                                name="title"
+                                placeholder="Event title"
+                                value={form.title}
+                                onChange={handleChange}
+                                required
+                            />
                         </div>
 
+                        {/* Description */}
                         <div className={styles.field}>
-                            <label className={styles.label}>Description</label>
+                            <label className={styles.label}>Description *</label>
                             <textarea
                                 className={styles.textarea}
                                 name="description"
@@ -82,27 +113,65 @@ export default function EventsPage() {
                                 value={form.description}
                                 onChange={handleChange}
                                 rows={3}
+                                required
                             />
                         </div>
 
+                        {/* Hosting LC */}
+                        <div className={styles.field}>
+                            <label className={styles.label}>Hosting LC *</label>
+                            <input
+                                className={styles.input}
+                                name="hostingLC"
+                                placeholder="e.g. LC Thessaloniki"
+                                value={form.hostingLC}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+
+                        {/* Event Type */}
+                        <div className={styles.field}>
+                            <label className={styles.label}>Event Type *</label>
+                            <select
+                                className={styles.select}
+                                name="type"
+                                value={form.type}
+                                onChange={handleChange}
+                                required
+                            >
+                                <option value="">Select a type</option>
+                                {EVENT_TYPES.map(type => (
+                                    <option key={type} value={type}>
+                                        {type.replace(/_/g, ' ')}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Start Time */}
                         <div className={styles.row}>
                             <div className={styles.field}>
-                                <label className={styles.label}>Start Time</label>
+                                <label className={styles.label}>Start Time *</label>
                                 <input
                                     className={styles.input}
                                     name="startTime"
                                     type="datetime-local"
+                                    placeholder="2026-05-10T10:00"
                                     value={form.startTime}
                                     onChange={handleChange}
                                     required
                                 />
                             </div>
+
+                            {/* End Time */}
                             <div className={styles.field}>
-                                <label className={styles.label}>End Time</label>
+                                <label className={styles.label}>End Time *</label>
                                 <input
                                     className={styles.input}
                                     name="endTime"
                                     type="datetime-local"
+                                    placeholder="2026-05-10T13:00"
                                     value={form.endTime}
                                     onChange={handleChange}
                                     required
@@ -110,9 +179,18 @@ export default function EventsPage() {
                             </div>
                         </div>
 
+                        {/* Form Footer */}
                         <div className={styles.formFooter}>
-                            {createError && <span className={styles.error}>{error?.response?.data || 'Something went wrong'}</span>}
-                            <button type="submit" className={styles.submitBtn} disabled={isPending}>
+                            {createError && (
+                                <span className={styles.error}>
+                                    {error?.response?.data?.message || 'Failed to create event'}
+                                </span>
+                            )}
+                            <button
+                                type="submit"
+                                className={styles.submitBtn}
+                                disabled={isPending}
+                            >
                                 {isPending ? 'Creating...' : 'Create Event'}
                             </button>
                         </div>
@@ -120,29 +198,28 @@ export default function EventsPage() {
                 </div>
             )}
 
+            {/* Events List */}
             <div className={styles.list}>
-                {event && isVisible(event.Id) && (
-                    <div className={styles.card}>
-                        <div className={styles.cardTop}>
-                            <span className={styles.badge}>Upcoming</span>
-                            <div className={styles.cardActions}>
-                                <span className={styles.location}>📍 {event.location}</span>
-                                <button className={styles.dismissBtn} onClick={() => dismiss(event.Id)}>✕</button>
+                {events.length === 0 ? (
+                    <p className={styles.state}>No events yet.</p>
+                ) : (
+                    events.map(event => (
+                        <div key={event.id} className={styles.card}>
+                            <div className={styles.cardTop}>
+                                <span className={styles.badge}>{event.type}</span>
+                                <span className={styles.location}>📍 {event.hostingLC}</span>
+                            </div>
+                            <h2 className={styles.eventTitle}>{event.title}</h2>
+                            <p className={styles.description}>{event.description}</p>
+                            <div className={styles.time}>
+                                <span>🕘</span>
+                                <span>
+                                    {new Date(event.startTime).toLocaleString()} →{' '}
+                                    {new Date(event.endTime).toLocaleString()}
+                                </span>
                             </div>
                         </div>
-                        <h2 className={styles.eventTitle}>{event.title}</h2>
-                        <p className={styles.description}>{event.description}</p>
-                        <div className={styles.time}>
-                            <span>🕘</span>
-                            <span>
-                                {new Date(event.startTime).toLocaleString()} → {new Date(event.endTime).toLocaleString()}
-                            </span>
-                        </div>
-                    </div>
-                )}
-
-                {event && !isVisible(event.Id) && (
-                    <p className={styles.state}>No events to show.</p>
+                    ))
                 )}
             </div>
         </main>
