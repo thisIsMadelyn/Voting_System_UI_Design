@@ -30,6 +30,7 @@ const NAV_PRIVILEGED = [
         items: [
             { id: 'attendance', label: 'Attendance', icon: 'user-check' },
             { id: 'meetings', label: 'Meetings', icon: 'users' },
+            { id: 'members', label: 'Members', icon: 'user' },
             { id: 'reports', label: 'Reports', icon: 'bar-chart' },
         ]
     }
@@ -43,6 +44,7 @@ const NAV_ROUTE_MAP = {
     settings: ROUTES.SETTINGS,
     attendance: ROUTES.ATTENDANCE,
     meetings: ROUTES.MEETINGS,
+    members: ROUTES.MEMBERS,
     reports: ROUTES.REPORTS,
 }
 
