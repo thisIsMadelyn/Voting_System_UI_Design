@@ -10,17 +10,17 @@ import {
     useCheckOut,
     useAttendanceSummary,
 } from '../hooks/useAttendance'
-import useAuthStore from '../services/AuthStore'
+import useAuthStore from '../services/authStore'
 import { useDismissed } from '../hooks/useDismissed'
 import styles from './PollsPage.module.css'
 
 const MAJORITY_TYPES = ['ABSOLUTE', 'TWO_THIRDS', 'RELATIVE']
 
 const STATUS_STYLES = {
-    PENDING:                   { label: 'Pending',        className: 'badgeMuted' },
-    VOTING_OPEN:               { label: 'Voting Open',    className: 'badgeGreen' },
-    REQUIRES_NEXT_ROUND:       { label: 'Next Round',     className: 'badgeGold' },
-    WINNER_DECLARED:           { label: 'Winner',         className: 'badgeBlue' },
+    PENDING:                     { label: 'Pending',          className: 'badgeMuted' },
+    VOTING_OPEN:                 { label: 'Voting Open',      className: 'badgeGreen' },
+    REQUIRES_NEXT_ROUND:         { label: 'Next Round',       className: 'badgeGold' },
+    WINNER_DECLARED:             { label: 'Winner',           className: 'badgeBlue' },
     TIE_REQUIRES_NEW_BOARD_VOTE: { label: 'Tie — Board Vote', className: 'badgeGold' },
 }
 
@@ -33,7 +33,6 @@ const ROUND_LABELS = {
 const VOTE_OPTIONS = ['FOR', 'AGAINST', 'BLANK']
 
 // --- Admin Controls Panel ---
-// Drives the full attendance → voting lifecycle for a poll
 function AdminControlsPanel({ poll }) {
     const [checkInUserId, setCheckInUserId] = useState('')
     const { data: summary } = useAttendanceSummary(poll.id)
@@ -43,10 +42,8 @@ function AdminControlsPanel({ poll }) {
     const { mutate: openRound, isPending: openingRound } = useOpenRound()
     const { mutate: closeRound, isPending: closingRound } = useCloseRoundAndOpenVoting()
     const { mutate: doCheckIn, isPending: checkingIn } = useCheckIn()
-    const { mutate: doCheckOut, isPending: checkingOut } = useCheckOut()
 
     const checkId = poll.attendanceCheckId
-    // Most recent active round from summary — adjust field name to match your API response
     const activeRound = summary?.activeRound
     const activeRoundId = activeRound?.id
 
@@ -55,7 +52,6 @@ function AdminControlsPanel({ poll }) {
             <p className={styles.adminPanelTitle}>⚙ Attendance Controls</p>
 
             <div className={styles.adminRow}>
-                {/* Step 1 — create check if not started */}
                 {!checkId && (
                     <button
                         className={styles.adminBtn}
@@ -66,7 +62,6 @@ function AdminControlsPanel({ poll }) {
                     </button>
                 )}
 
-                {/* Step 2 — open a round */}
                 {checkId && !activeRoundId && poll.status === 'PENDING' && (
                     <button
                         className={styles.adminBtn}
@@ -77,7 +72,6 @@ function AdminControlsPanel({ poll }) {
                     </button>
                 )}
 
-                {/* Step 3 — close round and open voting (the key trigger) */}
                 {activeRoundId && (
                     <button
                         className={`${styles.adminBtn} ${styles.adminBtnPrimary}`}
@@ -88,7 +82,6 @@ function AdminControlsPanel({ poll }) {
                     </button>
                 )}
 
-                {/* Close check permanently */}
                 {checkId && poll.status !== 'PENDING' && (
                     <button
                         className={`${styles.adminBtn} ${styles.adminBtnDanger}`}
@@ -100,7 +93,6 @@ function AdminControlsPanel({ poll }) {
                 )}
             </div>
 
-            {/* Check-in a user by ID — only during an active round */}
             {activeRoundId && (
                 <div className={styles.checkInRow}>
                     <input
@@ -120,18 +112,11 @@ function AdminControlsPanel({ poll }) {
                 </div>
             )}
 
-            {/* Attendance summary */}
             {summary && (
                 <div className={styles.summaryRow}>
-                    <span className={styles.summaryItem}>
-                        ✅ Present: {summary.activeCount ?? 0}
-                    </span>
-                    <span className={styles.summaryItem}>
-                        📋 Total checked: {summary.totalCheckedIn ?? 0}
-                    </span>
-                    <span className={styles.summaryItem}>
-                        🗳 Electoral body: {poll.electoralBodyCount ?? '—'}
-                    </span>
+                    <span className={styles.summaryItem}>✅ Present: {summary.activeCount ?? 0}</span>
+                    <span className={styles.summaryItem}>📋 Total checked: {summary.totalCheckedIn ?? 0}</span>
+                    <span className={styles.summaryItem}>🗳 Electoral body: {poll.electoralBodyCount ?? '—'}</span>
                 </div>
             )}
         </div>
@@ -152,10 +137,7 @@ function PollCard({ poll, userId, userRole, onDismiss }) {
 
     const alreadyVoted = hasVoted || _voted
     const isModeratorOrAdmin = userRole === 'MODERATOR' || userRole === 'ADMIN'
-
-    // Gate: voting UI only shown when poll is explicitly VOTING_OPEN
     const votingOpen = poll.status === 'VOTING_OPEN'
-
     const status = STATUS_STYLES[poll.status] ?? { label: poll.status, className: 'badgeMuted' }
 
     const handleVote = () => {
@@ -177,20 +159,14 @@ function PollCard({ poll, userId, userRole, onDismiss }) {
         <div className={styles.card}>
             <div className={styles.cardTop}>
                 <div className={styles.badges}>
-                    <span className={`${styles.badge} ${styles[status.className]}`}>
-                        {status.label}
-                    </span>
+                    <span className={`${styles.badge} ${styles[status.className]}`}>{status.label}</span>
                     <span className={`${styles.badge} ${styles.badgeMuted}`}>
                         {ROUND_LABELS[poll.currentRound] ?? poll.currentRound}
                     </span>
-                    <span className={`${styles.badge} ${styles.badgeMuted}`}>
-                        {poll.majorityType}
-                    </span>
+                    <span className={`${styles.badge} ${styles.badgeMuted}`}>{poll.majorityType}</span>
                 </div>
                 <div className={styles.cardActions}>
-                    <span className={styles.date}>
-                        {new Date(poll.createdAt).toLocaleDateString()}
-                    </span>
+                    <span className={styles.date}>{new Date(poll.createdAt).toLocaleDateString()}</span>
                     <button className={styles.dismissBtn} onClick={() => onDismiss(poll.id)}>✕</button>
                 </div>
             </div>
@@ -199,37 +175,22 @@ function PollCard({ poll, userId, userRole, onDismiss }) {
             <p className={styles.cardContent}>{poll.description}</p>
 
             <div className={styles.cardFooter}>
-                <span className={styles.meta}>
-                    📅 Meeting #{poll.meetingId}
-                </span>
-                <span className={styles.meta}>
-                    🗳 {voteCount ?? 0} / {poll.electoralBodyCount ?? '?'} votes
-                </span>
+                <span className={styles.meta}>📅 Meeting #{poll.meetingId}</span>
+                <span className={styles.meta}>🗳 {voteCount ?? 0} / {poll.electoralBodyCount ?? '?'} votes</span>
             </div>
 
-            {/* Admin controls — full lifecycle panel */}
-            {isModeratorOrAdmin && (
-                <AdminControlsPanel poll={poll} />
-            )}
+            {isModeratorOrAdmin && <AdminControlsPanel poll={poll} />}
 
-            {/* Vote button — only when VOTING_OPEN */}
             {votingOpen && !alreadyVoted && (
-                <button
-                    className={styles.expandBtn}
-                    onClick={() => setExpanded(v => !v)}
-                >
+                <button className={styles.expandBtn} onClick={() => setExpanded(v => !v)}>
                     {expanded ? 'Hide Voting' : 'Cast Vote'}
                 </button>
             )}
 
-            {/* Not eligible message — poll active but not VOTING_OPEN */}
             {!votingOpen && poll.isActive && !isModeratorOrAdmin && (
-                <p className={styles.notEligible}>
-                    ⏳ Voting not open yet — attendance in progress.
-                </p>
+                <p className={styles.notEligible}>⏳ Voting not open yet — attendance in progress.</p>
             )}
 
-            {/* Voting panel */}
             {expanded && votingOpen && !alreadyVoted && poll.options?.length > 0 && (
                 <div className={styles.votingPanel}>
                     <div className={styles.votingSection}>
@@ -246,7 +207,6 @@ function PollCard({ poll, userId, userRole, onDismiss }) {
                             ))}
                         </div>
                     </div>
-
                     <div className={styles.votingSection}>
                         <p className={styles.votingLabel}>Vote Type</p>
                         <div className={styles.voteTypeRow}>
@@ -261,7 +221,6 @@ function PollCard({ poll, userId, userRole, onDismiss }) {
                             ))}
                         </div>
                     </div>
-
                     <button
                         className={styles.submitVoteBtn}
                         onClick={handleVote}
@@ -290,9 +249,7 @@ function PollCard({ poll, userId, userRole, onDismiss }) {
                                     <span className={styles.resultVotes}>{c.forVotes} votes</span>
                                 </div>
                             ))}
-                            {results.winner && (
-                                <p className={styles.winner}>🏆 Winner: {results.winner}</p>
-                            )}
+                            {results.winner && <p className={styles.winner}>🏆 Winner: {results.winner}</p>}
                         </div>
                     )}
                 </div>
@@ -314,6 +271,7 @@ export default function PollsPage() {
         description: '',
         meetingId: '',
         majorityType: 'ABSOLUTE',
+        electoralBodyCount: '',
         candidateNames: [''],
     })
 
@@ -340,7 +298,7 @@ export default function PollsPage() {
             pollData: {
                 ...form,
                 meetingId: Number(form.meetingId),
-                // electoralBodyCount removed — auto-calculated when round closes
+                electoralBodyCount: Number(form.electoralBodyCount),
                 candidateNames: form.candidateNames.filter(n => n.trim() !== ''),
             }
         }, {
@@ -350,6 +308,7 @@ export default function PollsPage() {
                     description: '',
                     meetingId: '',
                     majorityType: 'ABSOLUTE',
+                    electoralBodyCount: '',
                     candidateNames: [''],
                 })
                 setShowForm(false)
@@ -410,16 +369,31 @@ export default function PollsPage() {
                             />
                         </div>
 
-                        <div className={styles.field}>
-                            <label className={styles.label}>Majority Type</label>
-                            <select
-                                className={styles.select}
-                                name="majorityType"
-                                value={form.majorityType}
-                                onChange={handleChange}
-                            >
-                                {MAJORITY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-                            </select>
+                        <div className={styles.row}>
+                            <div className={styles.field}>
+                                <label className={styles.label}>Majority Type</label>
+                                <select
+                                    className={styles.select}
+                                    name="majorityType"
+                                    value={form.majorityType}
+                                    onChange={handleChange}
+                                >
+                                    {MAJORITY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                                </select>
+                            </div>
+                            <div className={styles.field}>
+                                <label className={styles.label}>Electoral Body Count</label>
+                                <input
+                                    className={styles.input}
+                                    name="electoralBodyCount"
+                                    type="number"
+                                    min="1"
+                                    placeholder="e.g. 15"
+                                    value={form.electoralBodyCount}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
                         </div>
 
                         <div className={styles.field}>
@@ -438,9 +412,7 @@ export default function PollsPage() {
                                                 type="button"
                                                 className={styles.removeBtn}
                                                 onClick={() => removeCandidate(index)}
-                                            >
-                                                ✕
-                                            </button>
+                                            >✕</button>
                                         )}
                                     </div>
                                 ))}
@@ -474,7 +446,7 @@ export default function PollsPage() {
                         key={poll.id}
                         poll={poll}
                         userId={user?.userId}
-                        userRole={user?.loginProperty}
+                        userRole={user?.role}
                         onDismiss={dismiss}
                     />
                 ))}

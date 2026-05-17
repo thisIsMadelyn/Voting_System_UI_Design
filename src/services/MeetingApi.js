@@ -1,4 +1,4 @@
-import client from './AxiosClient'
+import client from './axiosClient'
 
 export const getActive = async () => {
     const response = await client.get('/general_meetings/active')

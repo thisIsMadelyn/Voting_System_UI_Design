@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useMemberships, useCommittees, useUserById } from '../hooks/useMembers'
-import useAuthStore from '../services/AuthStore'
+import useAuthStore from '../services/authStore'
 import styles from './MembersPage.module.css'
 
 // Expanded member card — fetches full user record for extra fields

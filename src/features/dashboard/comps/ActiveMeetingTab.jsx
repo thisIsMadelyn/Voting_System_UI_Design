@@ -6,39 +6,35 @@ import {
     openRound,
     closeRoundAndOpenVoting,
     deleteRound,
-    getRecordsByRound,
 } from '../../../services/AttendanceApi'
 import { createPoll } from '../../../services/PollsApi'
-import useAuthStore from '../../../services/AuthStore'
+import useAuthStore from '../../../services/authStore'
 import AttendanceRoundCard from './AttendanceRoundCard'
 import styles from './ActiveMeetingTab.module.css'
 
 const MAJORITY_TYPES = ['ABSOLUTE', 'TWO_THIRDS', 'RELATIVE']
 
-// One poll drives one attendance check drives N rounds
-// Admin/Moderator creates poll → attendance check auto-starts → rounds managed here
-
 export default function ActiveMeetingTab() {
     const { user } = useAuthStore()
+    const isPrivileged = ['MODERATOR', 'ADMIN'].includes(user?.role)
+
     const [meeting, setMeeting] = useState(null)
     const [users, setUsers] = useState([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
 
-    // Per-poll round state: { [pollId]: Round[] }
     const [roundsByPoll, setRoundsByPoll] = useState({})
 
-    // Create poll form
     const [showPollForm, setShowPollForm] = useState(false)
     const [pollForm, setPollForm] = useState({
         title: '',
         description: '',
         majorityType: 'ABSOLUTE',
+        electoralBodyCount: '',
         candidateNames: [''],
     })
     const [creatingPoll, setCreatingPoll] = useState(false)
 
-    // Per-poll action loading
     const [roundCreating, setRoundCreating] = useState({})
     const [votingOpening, setVotingOpening] = useState({})
 
@@ -66,8 +62,6 @@ export default function ActiveMeetingTab() {
         fetchData()
     }, [])
 
-    // --- Poll creation ---
-    // Creates poll + immediately creates attendance check for it
     const handleCreatePoll = async (e) => {
         e.preventDefault()
         if (!meeting) return
@@ -76,17 +70,24 @@ export default function ActiveMeetingTab() {
             const newPoll = await createPoll({
                 moderatorId: user.userId,
                 pollData: {
-                    ...pollForm,
+                    title: pollForm.title,
+                    description: pollForm.description,
+                    majorityType: pollForm.majorityType,
+                    electoralBodyCount: parseInt(pollForm.electoralBodyCount, 10),
                     meetingId: meeting.id,
                     candidateNames: pollForm.candidateNames.filter(n => n.trim() !== ''),
                 }
             })
-            // Auto-start attendance check for the new poll
             await createAttendanceCheck(newPoll.id)
-            // Refresh meeting to pick up new poll
             await fetchData()
             setShowPollForm(false)
-            setPollForm({ title: '', description: '', majorityType: 'ABSOLUTE', candidateNames: [''] })
+            setPollForm({
+                title: '',
+                description: '',
+                majorityType: 'ABSOLUTE',
+                electoralBodyCount: '',
+                candidateNames: [''],
+            })
         } catch (err) {
             console.error('Failed to create poll or attendance check', err)
         } finally {
@@ -94,7 +95,6 @@ export default function ActiveMeetingTab() {
         }
     }
 
-    // --- Round management ---
     const handleOpenRound = async (poll) => {
         if (!poll.attendanceCheckId) return
         setRoundCreating(prev => ({ ...prev, [poll.id]: true }))
@@ -115,7 +115,6 @@ export default function ActiveMeetingTab() {
         setVotingOpening(prev => ({ ...prev, [poll.id]: true }))
         try {
             await closeRoundAndOpenVoting(roundId)
-            // Poll status flips to VOTING_OPEN — refresh meeting
             await fetchData()
         } catch (err) {
             console.error('Failed to close round and open voting', err)
@@ -136,7 +135,6 @@ export default function ActiveMeetingTab() {
         }
     }
 
-    // Candidate management
     const handleCandidateChange = (index, value) => {
         const updated = [...pollForm.candidateNames]
         updated[index] = value
@@ -154,12 +152,10 @@ export default function ActiveMeetingTab() {
 
     const polls = meeting.polls ?? []
     const activePolls = polls.filter(p => p.isActive)
-    const isPrivileged = ['MODERATOR', 'ADMIN'].includes(user?.loginProperty)
 
     return (
         <div className={styles.wrapper}>
 
-            {/* Meeting header */}
             <div className={styles.meetingCard}>
                 <div className={styles.meetingInfo}>
                     <span className={styles.meetingLabel}>Active Meeting</span>
@@ -177,7 +173,6 @@ export default function ActiveMeetingTab() {
                 )}
             </div>
 
-            {/* Create poll form */}
             {showPollForm && isPrivileged && (
                 <div className={styles.formCard}>
                     <form onSubmit={handleCreatePoll} className={styles.form}>
@@ -214,6 +209,18 @@ export default function ActiveMeetingTab() {
                             />
                         </div>
                         <div className={styles.field}>
+                            <label className={styles.label}>Electoral Body Count</label>
+                            <input
+                                className={styles.input}
+                                type="number"
+                                min="1"
+                                placeholder="e.g. 15"
+                                value={pollForm.electoralBodyCount}
+                                onChange={e => setPollForm({ ...pollForm, electoralBodyCount: e.target.value })}
+                                required
+                            />
+                        </div>
+                        <div className={styles.field}>
                             <label className={styles.label}>Candidates</label>
                             <div className={styles.candidateList}>
                                 {pollForm.candidateNames.map((name, index) => (
@@ -239,7 +246,10 @@ export default function ActiveMeetingTab() {
                                 <button
                                     type="button"
                                     className={styles.addBtn}
-                                    onClick={() => setPollForm({ ...pollForm, candidateNames: [...pollForm.candidateNames, ''] })}
+                                    onClick={() => setPollForm({
+                                        ...pollForm,
+                                        candidateNames: [...pollForm.candidateNames, '']
+                                    })}
                                 >
                                     + Add Candidate
                                 </button>
@@ -252,14 +262,16 @@ export default function ActiveMeetingTab() {
                 </div>
             )}
 
-            {/* No active polls */}
             {activePolls.length === 0 && (
                 <div className={styles.emptyRounds}>
-                    <p>No active polls. {isPrivileged ? 'Create one above.' : 'Wait for a moderator to start a poll.'}</p>
+                    <p>
+                        {isPrivileged
+                            ? 'No active polls. Create one above.'
+                            : 'Wait for a moderator to start a poll.'}
+                    </p>
                 </div>
             )}
 
-            {/* One section per active poll */}
             {activePolls.map(poll => {
                 const rounds = roundsByPoll[poll.id] ?? []
                 const activeRound = rounds.find(r => r.isActive)
@@ -275,7 +287,6 @@ export default function ActiveMeetingTab() {
                                 </span>
                             </div>
 
-                            {/* Round controls — admin/moderator only */}
                             {isPrivileged && !votingOpen && (
                                 <div className={styles.roundControls}>
                                     {poll.attendanceCheckId && !activeRound && (
@@ -300,10 +311,11 @@ export default function ActiveMeetingTab() {
                             )}
                         </div>
 
-                        {/* Rounds */}
                         {rounds.length === 0 && (
                             <p className={styles.state}>
-                                {isPrivileged ? 'No rounds yet — open a round to start check-in.' : 'Waiting for round to open...'}
+                                {isPrivileged
+                                    ? 'No rounds yet — open a round to start check-in.'
+                                    : 'Waiting for round to open...'}
                             </p>
                         )}
                         <div className={styles.rounds}>

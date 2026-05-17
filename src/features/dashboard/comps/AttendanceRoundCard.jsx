@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { getRecordsByRound, checkIn, checkOut } from '../../../services/AttendanceApi.js'
 import styles from './AttendanceRoundCard.module.css'
 
-export default function AttendanceRoundCard({ round, users, pollId, defaultExpanded, onDelete }) {
+export default function AttendanceRoundCard({ round, users, defaultExpanded, onDelete }) {
 
     const [expanded, setExpanded] = useState(defaultExpanded)
     const [records, setRecords] = useState([])
@@ -76,13 +76,15 @@ export default function AttendanceRoundCard({ round, users, pollId, defaultExpan
                     </span>
                     <span className={styles.chevron}>{expanded ? '▲' : '▼'}</span>
                 </button>
-                <button
-                    className={styles.btnDelete}
-                    onClick={onDelete}
-                    title="Delete round"
-                >
-                    ✕
-                </button>
+                {onDelete && (
+                    <button
+                        className={styles.btnDelete}
+                        onClick={onDelete}
+                        title="Delete round"
+                    >
+                        ✕
+                    </button>
+                )}
             </div>
 
             {expanded && (

@@ -1,13 +1,5 @@
-import Icon from '../../../components/ui/Icon'
 import styles from './StatRow.module.css'
 import StatCard from './StatCard'
-
-const iconMap = {
-    users: 'users',
-    calendar: 'calendar',
-    check: 'check',
-    activity: 'activity',
-}
 
 export default function StatsRow({ stats }) {
     return (
@@ -16,7 +8,7 @@ export default function StatsRow({ stats }) {
                 <StatCard
                     key={stat.id}
                     stat={stat}
-                    iconName={iconMap[stat.icon]}
+                    iconName={stat.icon}
                     animDelay={80 + i * 50}
                 />
             ))}

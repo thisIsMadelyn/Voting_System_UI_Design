@@ -11,7 +11,7 @@ import EventPage from "../pages/EventPage.jsx";
 import AnnouncementsPage from "../pages/AnnouncementsPage.jsx";
 import MembersPage from "../pages/MembersPage.jsx";
 import { Navigate } from "react-router-dom";
-import useAuthStore from "../services/AuthStore.js";
+import useAuthStore from '../services/authStore'
 import ReportsPage from "../pages/ReportsPage.jsx";
 import AttendancePage from "../pages/AttendancePage.jsx";
 import SettingsPage  from "../pages/SettingsPage.jsx";
