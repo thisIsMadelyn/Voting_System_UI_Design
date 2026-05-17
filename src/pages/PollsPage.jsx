@@ -1,17 +1,27 @@
 import { useState } from 'react'
 import { usePolls, useCreatePoll } from '../hooks/usePolls'
-import useAuthStore from '../services/AuthStore'
-import { useHasVoted, useVoteCount, useCastVote, useElectionResults } from '../hooks/useVoting'
-import { useCheckIn } from '../hooks/useAttendance'
+import { useHasVoted, useCastVote, useVoteCount, useElectionResults } from '../hooks/useVoting'
+import {
+    useCreateAttendanceCheck,
+    useCloseAttendanceCheck,
+    useOpenRound,
+    useCloseRoundAndOpenVoting,
+    useCheckIn,
+    useCheckOut,
+    useAttendanceSummary,
+} from '../hooks/useAttendance'
+import useAuthStore from '../services/authStore'
 import { useDismissed } from '../hooks/useDismissed'
 import styles from './PollsPage.module.css'
 
 const MAJORITY_TYPES = ['ABSOLUTE', 'TWO_THIRDS', 'RELATIVE']
 
 const STATUS_STYLES = {
-    REQUIRES_NEXT_ROUND: { label: 'Next Round',  className: 'badgeGold' },
-    COMPLETED:           { label: 'Completed',   className: 'badgeGreen' },
-    ACTIVE:              { label: 'Active',       className: 'badgeBlue' },
+    PENDING:                     { label: 'Pending',          className: 'badgeMuted' },
+    VOTING_OPEN:                 { label: 'Voting Open',      className: 'badgeGreen' },
+    REQUIRES_NEXT_ROUND:         { label: 'Next Round',       className: 'badgeGold' },
+    WINNER_DECLARED:             { label: 'Winner',           className: 'badgeBlue' },
+    TIE_REQUIRES_NEW_BOARD_VOTE: { label: 'Tie — Board Vote', className: 'badgeGold' },
 }
 
 const ROUND_LABELS = {
@@ -22,27 +32,116 @@ const ROUND_LABELS = {
 
 const VOTE_OPTIONS = ['FOR', 'AGAINST', 'BLANK']
 
+// --- Admin Controls Panel ---
+function AdminControlsPanel({ poll }) {
+    const [checkInUserId, setCheckInUserId] = useState('')
+    const { data: summary } = useAttendanceSummary(poll.id)
+
+    const { mutate: createCheck, isPending: creatingCheck } = useCreateAttendanceCheck()
+    const { mutate: closeCheck, isPending: closingCheck } = useCloseAttendanceCheck()
+    const { mutate: openRound, isPending: openingRound } = useOpenRound()
+    const { mutate: closeRound, isPending: closingRound } = useCloseRoundAndOpenVoting()
+    const { mutate: doCheckIn, isPending: checkingIn } = useCheckIn()
+
+    const checkId = poll.attendanceCheckId
+    const activeRound = summary?.activeRound
+    const activeRoundId = activeRound?.id
+
+    return (
+        <div className={styles.adminPanel}>
+            <p className={styles.adminPanelTitle}>⚙ Attendance Controls</p>
+
+            <div className={styles.adminRow}>
+                {!checkId && (
+                    <button
+                        className={styles.adminBtn}
+                        onClick={() => createCheck(poll.id)}
+                        disabled={creatingCheck}
+                    >
+                        {creatingCheck ? 'Starting...' : 'Begin Attendance'}
+                    </button>
+                )}
+
+                {checkId && !activeRoundId && poll.status === 'PENDING' && (
+                    <button
+                        className={styles.adminBtn}
+                        onClick={() => openRound(checkId)}
+                        disabled={openingRound}
+                    >
+                        {openingRound ? 'Opening...' : 'Open Round'}
+                    </button>
+                )}
+
+                {activeRoundId && (
+                    <button
+                        className={`${styles.adminBtn} ${styles.adminBtnPrimary}`}
+                        onClick={() => closeRound(activeRoundId)}
+                        disabled={closingRound}
+                    >
+                        {closingRound ? 'Opening Voting...' : 'Close Round & Open Voting'}
+                    </button>
+                )}
+
+                {checkId && poll.status !== 'PENDING' && (
+                    <button
+                        className={`${styles.adminBtn} ${styles.adminBtnDanger}`}
+                        onClick={() => closeCheck(checkId)}
+                        disabled={closingCheck}
+                    >
+                        {closingCheck ? 'Closing...' : 'End Check'}
+                    </button>
+                )}
+            </div>
+
+            {activeRoundId && (
+                <div className={styles.checkInRow}>
+                    <input
+                        className={styles.input}
+                        type="number"
+                        placeholder="User ID to check in"
+                        value={checkInUserId}
+                        onChange={e => setCheckInUserId(e.target.value)}
+                    />
+                    <button
+                        className={styles.adminBtn}
+                        onClick={() => doCheckIn({ roundId: activeRoundId, userId: Number(checkInUserId), pollId: poll.id })}
+                        disabled={!checkInUserId || checkingIn}
+                    >
+                        {checkingIn ? 'Checking in...' : 'Check In'}
+                    </button>
+                </div>
+            )}
+
+            {summary && (
+                <div className={styles.summaryRow}>
+                    <span className={styles.summaryItem}>✅ Present: {summary.activeCount ?? 0}</span>
+                    <span className={styles.summaryItem}>📋 Total checked: {summary.totalCheckedIn ?? 0}</span>
+                    <span className={styles.summaryItem}>🗳 Electoral body: {poll.electoralBodyCount ?? '—'}</span>
+                </div>
+            )}
+        </div>
+    )
+}
+
+// --- Poll Card ---
 function PollCard({ poll, userId, userRole, onDismiss }) {
     const { data: hasVoted } = useHasVoted(userId, poll.id)
     const { data: voteCount } = useVoteCount(poll.id)
     const { data: results } = useElectionResults(poll.id)
     const { mutate: castVote, isPending: voting } = useCastVote()
-    const { mutate: checkIn, isPending: checkingIn } = useCheckIn()
 
     const [expanded, setExpanded] = useState(false)
     const [selectedOption, setSelectedOption] = useState(null)
     const [selectedVoteType, setSelectedVoteType] = useState('FOR')
-    const [checkInUserId, setCheckInUserId] = useState('')
     const [_voted, setVoted] = useState(false)
 
     const alreadyVoted = hasVoted || _voted
     const isModeratorOrAdmin = userRole === 'MODERATOR' || userRole === 'ADMIN'
-    const status = STATUS_STYLES[poll.status] ?? { label: poll.status, className: 'badgeGold' }
+    const votingOpen = poll.status === 'VOTING_OPEN'
+    const status = STATUS_STYLES[poll.status] ?? { label: poll.status, className: 'badgeMuted' }
 
     const handleVote = () => {
-        console.log('handleVote fired', { selectedOption, alreadyVoted })
         if (!selectedOption || alreadyVoted) return
-        console.log('sending vote request')
         castVote({
             userId,
             pollId: poll.id,
@@ -56,21 +155,14 @@ function PollCard({ poll, userId, userRole, onDismiss }) {
         })
     }
 
-    const handleCheckIn = (targetUserId) => {
-        checkIn({
-            meeting: { id: poll.meeting?.id },
-            user: { id: Number(targetUserId) },
-            check_in_time: new Date().toISOString().slice(0, 19),
-            attendance_method: 'PHYSICAL',
-        })
-    }
-
     return (
         <div className={styles.card}>
             <div className={styles.cardTop}>
                 <div className={styles.badges}>
                     <span className={`${styles.badge} ${styles[status.className]}`}>{status.label}</span>
-                    <span className={`${styles.badge} ${styles.badgeMuted}`}>{ROUND_LABELS[poll.currentRound] ?? poll.currentRound}</span>
+                    <span className={`${styles.badge} ${styles.badgeMuted}`}>
+                        {ROUND_LABELS[poll.currentRound] ?? poll.currentRound}
+                    </span>
                     <span className={`${styles.badge} ${styles.badgeMuted}`}>{poll.majorityType}</span>
                 </div>
                 <div className={styles.cardActions}>
@@ -83,50 +175,23 @@ function PollCard({ poll, userId, userRole, onDismiss }) {
             <p className={styles.cardContent}>{poll.description}</p>
 
             <div className={styles.cardFooter}>
-                <span className={styles.meta}>📅 Meeting #{poll.meeting?.id} · {new Date(poll.meeting?.meetingDate).toLocaleDateString()}</span>
-                <span className={styles.meta}>🗳 {voteCount ?? 0} / {poll.electoralBodyCount} votes</span>
+                <span className={styles.meta}>📅 Meeting #{poll.meetingId}</span>
+                <span className={styles.meta}>🗳 {voteCount ?? 0} / {poll.electoralBodyCount ?? '?'} votes</span>
             </div>
 
-            {isModeratorOrAdmin && poll.isActive && (
-                <div className={styles.checkInPanel}>
-                    <p className={styles.votingLabel}>Check In User</p>
-                    <div className={styles.checkInRow}>
-                        <input
-                            className={styles.input}
-                            type="number"
-                            placeholder="User ID"
-                            value={checkInUserId}
-                            onChange={e => setCheckInUserId(e.target.value)}
-                        />
-                        <button
-                            className={styles.checkInBtn}
-                            onClick={() => handleCheckIn(checkInUserId)}
-                            disabled={!checkInUserId || checkingIn}
-                        >
-                            {checkingIn ? 'Checking in...' : 'Check In'}
-                        </button>
-                    </div>
-                    <button
-                        className={styles.checkInBtn}
-                        onClick={() => handleCheckIn(userId)}
-                        disabled={checkingIn}
-                    >
-                        Check In Myself
-                    </button>
-                </div>
-            )}
+            {isModeratorOrAdmin && <AdminControlsPanel poll={poll} />}
 
-            {poll.isActive && (
-                <button
-                    className={styles.expandBtn}
-                    onClick={() => setExpanded(v => !v)}
-                    disabled={alreadyVoted}
-                >
-                    {alreadyVoted ? 'Already Voted ✓' : expanded ? 'Hide Voting' : 'Cast Vote'}
+            {votingOpen && !alreadyVoted && (
+                <button className={styles.expandBtn} onClick={() => setExpanded(v => !v)}>
+                    {expanded ? 'Hide Voting' : 'Cast Vote'}
                 </button>
             )}
 
-            {expanded && !alreadyVoted && poll.options?.length > 0 && (
+            {!votingOpen && poll.isActive && !isModeratorOrAdmin && (
+                <p className={styles.notEligible}>⏳ Voting not open yet — attendance in progress.</p>
+            )}
+
+            {expanded && votingOpen && !alreadyVoted && poll.options?.length > 0 && (
                 <div className={styles.votingPanel}>
                     <div className={styles.votingSection}>
                         <p className={styles.votingLabel}>Select Candidate</p>
@@ -142,7 +207,6 @@ function PollCard({ poll, userId, userRole, onDismiss }) {
                             ))}
                         </div>
                     </div>
-
                     <div className={styles.votingSection}>
                         <p className={styles.votingLabel}>Vote Type</p>
                         <div className={styles.voteTypeRow}>
@@ -157,7 +221,6 @@ function PollCard({ poll, userId, userRole, onDismiss }) {
                             ))}
                         </div>
                     </div>
-
                     <button
                         className={styles.submitVoteBtn}
                         onClick={handleVote}
@@ -168,7 +231,7 @@ function PollCard({ poll, userId, userRole, onDismiss }) {
                 </div>
             )}
 
-            {expanded && !alreadyVoted && poll.options?.length === 0 && (
+            {expanded && votingOpen && !alreadyVoted && poll.options?.length === 0 && (
                 <div className={styles.votingPanel}>
                     <p className={styles.alreadyVoted}>No candidates available for this poll.</p>
                 </div>
@@ -186,9 +249,7 @@ function PollCard({ poll, userId, userRole, onDismiss }) {
                                     <span className={styles.resultVotes}>{c.forVotes} votes</span>
                                 </div>
                             ))}
-                            {results.winner && (
-                                <p className={styles.winner}>🏆 Winner: {results.winner}</p>
-                            )}
+                            {results.winner && <p className={styles.winner}>🏆 Winner: {results.winner}</p>}
                         </div>
                     )}
                 </div>
@@ -197,6 +258,7 @@ function PollCard({ poll, userId, userRole, onDismiss }) {
     )
 }
 
+// --- Polls Page ---
 export default function PollsPage() {
     const { user } = useAuthStore()
     const { data: polls, isLoading } = usePolls()
@@ -221,7 +283,8 @@ export default function PollsPage() {
         setForm({ ...form, candidateNames: updated })
     }
 
-    const addCandidate = () => setForm({ ...form, candidateNames: [...form.candidateNames, ''] })
+    const addCandidate = () =>
+        setForm({ ...form, candidateNames: [...form.candidateNames, ''] })
 
     const removeCandidate = (index) => {
         const updated = form.candidateNames.filter((_, i) => i !== index)
@@ -324,7 +387,8 @@ export default function PollsPage() {
                                     className={styles.input}
                                     name="electoralBodyCount"
                                     type="number"
-                                    placeholder="e.g. 50"
+                                    min="1"
+                                    placeholder="e.g. 15"
                                     value={form.electoralBodyCount}
                                     onChange={handleChange}
                                     required
@@ -348,9 +412,7 @@ export default function PollsPage() {
                                                 type="button"
                                                 className={styles.removeBtn}
                                                 onClick={() => removeCandidate(index)}
-                                            >
-                                                ✕
-                                            </button>
+                                            >✕</button>
                                         )}
                                     </div>
                                 ))}
@@ -384,7 +446,7 @@ export default function PollsPage() {
                         key={poll.id}
                         poll={poll}
                         userId={user?.userId}
-                        userRole={user?.loginProperty}
+                        userRole={user?.role}
                         onDismiss={dismiss}
                     />
                 ))}

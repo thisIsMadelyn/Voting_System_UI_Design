@@ -1,5 +1,5 @@
 import Icon from '../ui/Icon'
-import useAuthStore from '../../services/AuthStore'
+import useAuthStore from '../../services/authStore'
 import { useCurrentUserProfile } from '../../hooks/useUsers'
 import styles from './SidebarUser.module.css'
 
