@@ -6,6 +6,7 @@ import {
     openRound,
     closeRoundAndOpenVoting,
     deleteRound,
+    getRoundsByCheckId,
 } from '../../../services/AttendanceApi'
 import { createPoll } from '../../../services/PollsApi'
 import useAuthStore from '../../../services/authStore'
@@ -47,6 +48,21 @@ export default function ActiveMeetingTab() {
             ])
             setMeeting(activeMeeting)
             setUsers(allUsers)
+
+            const polls = activeMeeting?.polls ?? []
+            const roundsMap = {}
+            await Promise.all(
+                polls
+                    .filter(p => p.attendanceCheckId)
+                    .map(async p => {
+                        try {
+                            roundsMap[p.id] = await getRoundsByCheckId(p.attendanceCheckId)
+                        } catch {
+                            roundsMap[p.id] = []
+                        }
+                    })
+            )
+            setRoundsByPoll(roundsMap)
         } catch (err) {
             if (err?.response?.status === 404) {
                 setMeeting(null)
