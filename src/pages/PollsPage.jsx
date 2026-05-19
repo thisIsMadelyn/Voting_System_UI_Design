@@ -30,7 +30,7 @@ function PollCard({ poll, userId, userRole, onDismiss }) {
     const { data: voteCount } = useVoteCount(poll.id)
     const { data: options } = usePollOptions(poll.id)
     const { data: results } = useElectionResults(poll.id)
-    const { mutate: castVote, isPending: voting } = useCastVote()
+    const { mutate: castVote, isPending: voting, error: voteError } = useCastVote()
     const { mutate: openVoting, isPending: openingVoting } = useOpenPollVoting()
     const { mutate: startNextRound, isPending: startingNextRound } = useStartNextRound()
 
@@ -135,6 +135,11 @@ function PollCard({ poll, userId, userRole, onDismiss }) {
                     >
                         {voting ? 'Submitting…' : !firstOptionId ? 'No candidates configured' : 'Submit Vote'}
                     </button>
+                    {voteError && (
+                        <p className={styles.notEligible}>
+                            {voteError.response?.data?.message ?? voteError.message}
+                        </p>
+                    )}
                 </div>
             )}
 
@@ -165,7 +170,7 @@ function PollCard({ poll, userId, userRole, onDismiss }) {
                             onClick={handleStartNextRound}
                             disabled={startingNextRound}
                         >
-                            {startingNextRound ? 'Starting...' : `Start ${ROUND_LABELS[results.round] ? 'Next' : ''} Round`}
+                            {startingNextRound ? 'Starting...' : 'Start Next Round'}
                         </button>
                     )}
                 </div>

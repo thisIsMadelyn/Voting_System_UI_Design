@@ -224,3 +224,4 @@ Renamed 6 service/router files to consistent lowercase camelCase and updated all
 - **Voting gate:** Fixed 2026-05-17
 - **`PATCH` CORS:** Fixed 2026-05-17
 - **Poll must have ≥ 1 candidate option in DB** — `castVote` backend requires valid `optionId`. Submit shows "No candidates configured" and is disabled otherwise.
+- **Multi-round voting blocked by DB unique constraint (NOT FIXED):** `votes` table unique constraint `UKe70p4va4tsm9uslnwx2456ddt` (on `user_id + poll_id`, without `round`) prevents the same user from voting in round 2+. Surfaces as 400 with message `Duplicate entry 'X-Y' for key 'votes.UKe70p4va4tsm9uslnwx2456ddt'` shown in PollCard. Backend fix: Liquibase migration to drop and recreate constraint with `round` included.

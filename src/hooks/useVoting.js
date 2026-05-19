@@ -52,6 +52,7 @@ export function useStartNextRound() {
             queryClient.invalidateQueries({ queryKey: ['polls'] })
             queryClient.invalidateQueries({ queryKey: ['electionResults', variables.pollId] })
             queryClient.invalidateQueries({ queryKey: ['voteCount', variables.pollId] })
+            queryClient.invalidateQueries({ queryKey: ['hasVoted'] })
         },
     })
 }

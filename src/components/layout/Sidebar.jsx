@@ -1,4 +1,4 @@
-import { ROUTES } from "../../router/Routes";
+import { ROUTES } from "../../router/routes";
 import styles from './Sidebar.module.css'
 import Sidebarlogo from './Sidebarlogo'
 import Navgroup from './Navgroup'
